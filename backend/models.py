@@ -48,3 +48,5 @@ class InvestmentResponse(BaseModel):
     sharpe_ratio: float
     country_products: dict[str, str]
     market_data_source: str
+    ai_explanation: str = ""
+    llm_source: str = "none"

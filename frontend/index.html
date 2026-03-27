@@ -17,7 +17,7 @@
           <span class="logo-icon">📈</span>
           <span class="logo-text">AI Investment Planner</span>
         </div>
-        <p class="header-tagline">Personalised portfolio recommendations powered by CSP + MPT</p>
+        <p class="header-tagline">Personalised portfolio recommendations powered by CSP + MPT + LLM</p>
       </div>
     </header>
 
@@ -156,10 +156,30 @@
           </div>
         </div>
 
+        <!-- AI Explanation -->
+        <div class="card explanation-card" id="explanation-card">
+          <h2 class="card-title">
+            🤖 AI Investment Explanation
+            <span id="llm-badge" class="llm-badge"></span>
+          </h2>
+          <div id="ai-explanation" class="ai-explanation-text"></div>
+        </div>
+
         <!-- Country Products -->
         <div class="card products-card">
           <h2 class="card-title" id="products-title">Recommended Products</h2>
           <div id="products-grid" class="products-grid"></div>
+        </div>
+
+        <!-- Report Download -->
+        <div class="card download-card">
+          <h2 class="card-title">📄 Download Your Report</h2>
+          <p class="download-desc">Get a comprehensive PDF report with your portfolio details, AI explanation, and country-specific investment recommendations.</p>
+          <button id="download-btn" class="btn-download">
+            <span class="btn-download-text">Download PDF Report</span>
+            <span class="spinner hidden" id="download-spinner"></span>
+          </button>
+          <div id="download-error" class="error-banner hidden"></div>
         </div>
 
       </section>

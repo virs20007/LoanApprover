@@ -15,16 +15,21 @@ const ASSET_COLORS = {
 };
 
 let pieChart = null;   // Chart.js instance — destroyed & recreated on each request
+let cachedRequest = null; // cached for report download
 
 // ---------------------------------------------------------------------------
 // DOM refs
 // ---------------------------------------------------------------------------
-const form         = document.getElementById("investment-form");
-const formError    = document.getElementById("form-error");
-const submitBtn    = document.getElementById("submit-btn");
-const btnText      = submitBtn.querySelector(".btn-text");
-const spinner      = document.getElementById("spinner");
-const resultsSection = document.getElementById("results-section");
+const form            = document.getElementById("investment-form");
+const formError       = document.getElementById("form-error");
+const submitBtn       = document.getElementById("submit-btn");
+const btnText         = submitBtn.querySelector(".btn-text");
+const spinner         = document.getElementById("spinner");
+const resultsSection  = document.getElementById("results-section");
+const downloadBtn     = document.getElementById("download-btn");
+const downloadBtnText = downloadBtn.querySelector(".btn-download-text");
+const downloadSpinner = document.getElementById("download-spinner");
+const downloadError   = document.getElementById("download-error");
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -51,6 +56,12 @@ function setLoading(isLoading) {
   btnText.textContent = isLoading ? "Calculating…" : "Get My Investment Plan";
 }
 
+function setDownloadLoading(isLoading) {
+  downloadBtn.disabled = isLoading;
+  downloadSpinner.classList.toggle("hidden", !isLoading);
+  downloadBtnText.textContent = isLoading ? "Generating PDF…" : "Download PDF Report";
+}
+
 function showError(msg) {
   formError.textContent = msg;
   formError.classList.remove("hidden");
@@ -60,6 +71,16 @@ function showError(msg) {
 function hideError() {
   formError.textContent = "";
   formError.classList.add("hidden");
+}
+
+function showDownloadError(msg) {
+  downloadError.textContent = msg;
+  downloadError.classList.remove("hidden");
+}
+
+function hideDownloadError() {
+  downloadError.textContent = "";
+  downloadError.classList.add("hidden");
 }
 
 // ---------------------------------------------------------------------------
@@ -106,6 +127,7 @@ function renderResults(data, currency) {
 
   renderPieChart(data.allocation);
   renderAllocationTable(data.allocation, data.investment_amounts, currency);
+  renderAIExplanation(data.ai_explanation, data.llm_source);
   renderProducts(data.country_products, data.country);
 
   resultsSection.classList.remove("hidden");
@@ -194,6 +216,40 @@ function renderAllocationTable(allocation, amounts, currency) {
 }
 
 // ---------------------------------------------------------------------------
+// AI Explanation
+// ---------------------------------------------------------------------------
+function renderAIExplanation(explanation, llmSource) {
+  const container = document.getElementById("ai-explanation");
+  const badge = document.getElementById("llm-badge");
+  const card = document.getElementById("explanation-card");
+
+  if (!explanation) {
+    card.classList.add("hidden");
+    return;
+  }
+
+  card.classList.remove("hidden");
+
+  // LLM source badge
+  if (llmSource === "openai") {
+    badge.textContent = "✨ GPT-4o-mini";
+    badge.className = "llm-badge badge-openai";
+  } else {
+    badge.textContent = "📝 Template";
+    badge.className = "llm-badge badge-mock";
+  }
+
+  // Render paragraphs
+  container.innerHTML = "";
+  const paragraphs = explanation.split("\n\n").filter(p => p.trim());
+  for (const para of paragraphs) {
+    const p = document.createElement("p");
+    p.textContent = para.trim();
+    container.appendChild(p);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Country products
 // ---------------------------------------------------------------------------
 function renderProducts(products, country) {
@@ -266,6 +322,7 @@ form.addEventListener("submit", async (e) => {
     }
 
     const result = await res.json();
+    cachedRequest = data;   // cache for PDF download
     renderResults(result, getCurrencySymbol(data.country));
 
   } catch (networkErr) {
@@ -275,5 +332,50 @@ form.addEventListener("submit", async (e) => {
     );
   } finally {
     setLoading(false);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// PDF download
+// ---------------------------------------------------------------------------
+downloadBtn.addEventListener("click", async () => {
+  if (!cachedRequest) return;
+  hideDownloadError();
+  setDownloadLoading(true);
+
+  try {
+    const res = await fetch(`${API_BASE}/api/download_report`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cachedRequest),
+    });
+
+    if (!res.ok) {
+      let msg = `Failed to generate report: ${res.status}`;
+      try {
+        const body = await res.json();
+        msg = body.detail || msg;
+      } catch {}
+      showDownloadError(msg);
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "investment_report.pdf";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+  } catch (networkErr) {
+    showDownloadError(
+      "Could not connect to the server. Make sure the backend is running at " +
+      API_BASE
+    );
+  } finally {
+    setDownloadLoading(false);
   }
 });
