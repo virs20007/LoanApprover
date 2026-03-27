@@ -8,11 +8,12 @@ Orchestrates the full recommendation flow:
 4. Apply financial goal adjustments
 5. Run CSP to get valid allocations
 6. Run MPT to select the best portfolio
-7. Return InvestmentResponse
+7. Query LLM for a natural-language explanation
+8. Return InvestmentResponse
 """
 
 import logging
-from copy import deepcopy
+import os
 
 from models import InvestmentRequest, InvestmentResponse
 from market_data import get_market_data, ASSET_CLASSES
@@ -61,6 +62,12 @@ INVESTABLE_FRACTION: dict[str, float] = {
 }
 
 STEP = 5  # percentage step — must match csp_solver
+
+LLM_SYSTEM_PROMPT = (
+    "You are an AI financial advisor for educational purposes. "
+    "Explain investment portfolio allocations clearly and concisely. "
+    "Always include a disclaimer that this is not real financial advice."
+)
 
 
 def _clamp(value: int, lo: int = 0, hi: int = 100) -> int:
@@ -128,7 +135,7 @@ def _target_to_bounds(
     window: int = 20,
 ) -> dict[str, tuple[int, int]]:
     """
-    Convert a target allocation into ±window% bounds for the CSP.
+    Convert a target allocation into +-window% bounds for the CSP.
     """
     bounds: dict[str, tuple[int, int]] = {}
     for asset, pct in target.items():
@@ -136,6 +143,133 @@ def _target_to_bounds(
         hi = _snap_to_step(min(100, pct + window))
         bounds[asset] = (lo, hi)
     return bounds
+
+
+def _mock_explanation(
+    request: InvestmentRequest,
+    allocation: dict[str, float],
+    expected_return: float,
+    volatility: float,
+    sharpe: float,
+) -> str:
+    """Generate a template-based explanation when no LLM is available."""
+    top_asset = max(allocation, key=lambda a: allocation[a])
+    top_pct = allocation[top_asset]
+    stocks_pct = allocation.get("Stocks", 0)
+    bonds_pct = allocation.get("Bonds", 0)
+
+    age_note = ""
+    if request.age >= 50:
+        age_note = (
+            f" Given your age of {request.age}, the stock allocation has been "
+            f"moderated to reduce exposure to market volatility as you approach "
+            f"or are in your peak earning years."
+        )
+    elif request.age <= 30:
+        age_note = (
+            f" At {request.age} years old, you have a longer investment horizon, "
+            f"allowing the portfolio to take on slightly more risk for potentially "
+            f"higher long-term returns."
+        )
+
+    goal_note = {
+        "Buying house": (
+            "The portfolio is structured conservatively with higher cash and bond "
+            "allocations to preserve capital for your home purchase goal."
+        ),
+        "Retirement": (
+            "For retirement planning, the portfolio balances growth assets (stocks) "
+            "with stability (bonds) to build wealth over time while managing risk."
+        ),
+        "Savings": (
+            "With a savings goal, the portfolio emphasises capital preservation "
+            "through higher bond and cash allocations while maintaining some growth "
+            "potential."
+        ),
+        "Investment": (
+            "For a general investment goal, the portfolio is optimised for the "
+            "best risk-adjusted return based on your risk tolerance."
+        ),
+    }.get(request.financial_goal, "")
+
+    explanation = (
+        f"Based on your {request.risk_level.lower()} risk tolerance and "
+        f"{request.financial_goal.lower()} goal, the CSP + Modern Portfolio Theory "
+        f"optimiser recommends a portfolio led by {top_asset} ({top_pct:.0f}%), "
+        f"with Stocks at {stocks_pct:.0f}% and Bonds at {bonds_pct:.0f}%.{age_note} "
+        f"This allocation achieved a Sharpe Ratio of {sharpe:.4f}, representing "
+        f"an expected annual return of {expected_return:.2f}% with "
+        f"{volatility:.2f}% volatility — the highest risk-adjusted return "
+        f"among all valid portfolio combinations.\n\n"
+        f"{goal_note} "
+        f"The covariance matrix computed from live market data ensures that "
+        f"correlations between asset classes are properly accounted for, leading "
+        f"to more accurate volatility estimates than simple variance calculations.\n\n"
+        f"Disclaimer: This analysis is for educational purposes only and does "
+        f"not constitute professional financial advice. Past performance is not "
+        f"indicative of future results. Please consult a qualified financial "
+        f"advisor before making any investment decisions."
+    )
+    return explanation
+
+
+def _generate_llm_explanation(
+    request: InvestmentRequest,
+    allocation: dict[str, float],
+    expected_return: float,
+    volatility: float,
+    sharpe: float,
+    currency: str,
+    total_investable: float,
+) -> tuple[str, str]:
+    """
+    Generate a natural-language explanation of the portfolio recommendation.
+    Returns (explanation_text, source) where source is 'openai' or 'mock'.
+    """
+    api_key = os.getenv("OPENAI_API_KEY", "")
+    if not api_key:
+        return _mock_explanation(request, allocation, expected_return, volatility, sharpe), "mock"
+
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=api_key)
+
+        alloc_lines = "\n".join(
+            f"  - {asset}: {pct:.0f}%"
+            for asset, pct in sorted(allocation.items(), key=lambda x: -x[1])
+        )
+        user_msg = (
+            f"User Profile:\n"
+            f"  Country: {request.country}\n"
+            f"  Age: {request.age}\n"
+            f"  Monthly Income: {currency}{request.monthly_income:,.0f}\n"
+            f"  Monthly Expenses: {currency}{request.monthly_expenses:,.0f}\n"
+            f"  Risk Level: {request.risk_level}\n"
+            f"  Financial Goal: {request.financial_goal}\n\n"
+            f"Recommended Portfolio:\n{alloc_lines}\n\n"
+            f"Portfolio Metrics:\n"
+            f"  Expected Annual Return: {expected_return:.2f}%\n"
+            f"  Expected Annual Volatility: {volatility:.2f}%\n"
+            f"  Sharpe Ratio: {sharpe:.4f}\n"
+            f"  Annual Investable Amount: {currency}{total_investable:,.0f}\n\n"
+            f"Please provide a 2-3 paragraph explanation of why this portfolio was "
+            f"recommended, highlighting key decisions such as how age, risk level, "
+            f"and financial goal influenced the allocation. Include a brief disclaimer."
+        )
+
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": LLM_SYSTEM_PROMPT},
+                {"role": "user", "content": user_msg},
+            ],
+            max_tokens=600,
+            temperature=0.7,
+        )
+        return response.choices[0].message.content.strip(), "openai"
+    except Exception as exc:
+        logger.warning("OpenAI call failed (%s). Using mock explanation.", exc)
+        return _mock_explanation(request, allocation, expected_return, volatility, sharpe), "mock"
 
 
 def get_investment_recommendation(request: InvestmentRequest) -> InvestmentResponse:
@@ -192,6 +326,17 @@ def get_investment_recommendation(request: InvestmentRequest) -> InvestmentRespo
     country_info = COUNTRY_SPECIFIC_INFO.get(request.country, {})
     products = country_info.get(request.financial_goal, {})
 
+    # 9. LLM explanation
+    ai_explanation, llm_source = _generate_llm_explanation(
+        request=request,
+        allocation=allocation,
+        expected_return=round(exp_return * 100, 2),
+        volatility=round(exp_vol * 100, 2),
+        sharpe=round(sharpe, 4),
+        currency=currency,
+        total_investable=total_investable,
+    )
+
     return InvestmentResponse(
         allocation=allocation,
         investment_amounts=investment_amounts,
@@ -202,4 +347,6 @@ def get_investment_recommendation(request: InvestmentRequest) -> InvestmentRespo
         sharpe_ratio=round(sharpe, 4),
         country_products=products,
         market_data_source=data_source,
+        ai_explanation=ai_explanation,
+        llm_source=llm_source,
     )
