@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Investment Planner</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- Header -->
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="logo">
+          <span class="logo-icon">📈</span>
+          <span class="logo-text">AI Investment Planner</span>
+        </div>
+        <p class="header-tagline">Personalised portfolio recommendations powered by CSP + MPT</p>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <!-- Input Form Card -->
+      <section class="card form-card" id="form-section">
+        <h2 class="card-title">Tell us about yourself</h2>
+        <form id="investment-form" novalidate>
+          <div class="form-grid">
+            <!-- Country -->
+            <div class="form-group">
+              <label for="country">Country</label>
+              <select id="country" name="country" required>
+                <option value="" disabled selected>Select your country</option>
+                <option value="us">United States</option>
+                <option value="canada">Canada</option>
+                <option value="india">India</option>
+                <option value="uk">United Kingdom</option>
+                <option value="new zealand">New Zealand</option>
+                <option value="netherlands">Netherlands</option>
+                <option value="germany">Germany</option>
+                <option value="france">France</option>
+                <option value="australia">Australia</option>
+              </select>
+            </div>
+
+            <!-- Age -->
+            <div class="form-group">
+              <label for="age">Age</label>
+              <input type="number" id="age" name="age" min="18" max="100" placeholder="e.g. 35" required />
+            </div>
+
+            <!-- Monthly Income -->
+            <div class="form-group">
+              <label for="monthly_income">Monthly Income</label>
+              <input type="number" id="monthly_income" name="monthly_income" min="0" step="100" placeholder="e.g. 5000" required />
+            </div>
+
+            <!-- Monthly Expenses -->
+            <div class="form-group">
+              <label for="monthly_expenses">Monthly Expenses</label>
+              <input type="number" id="monthly_expenses" name="monthly_expenses" min="0" step="100" placeholder="e.g. 3000" required />
+            </div>
+
+            <!-- Risk Level -->
+            <div class="form-group">
+              <label>Risk Level</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" name="risk_level" value="Low" required />
+                  <span class="radio-pill low">Low</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="risk_level" value="Medium" required />
+                  <span class="radio-pill medium">Medium</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="risk_level" value="High" required />
+                  <span class="radio-pill high">High</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Financial Goal -->
+            <div class="form-group">
+              <label for="financial_goal">Financial Goal</label>
+              <select id="financial_goal" name="financial_goal" required>
+                <option value="" disabled selected>Select your goal</option>
+                <option value="Savings">Savings</option>
+                <option value="Retirement">Retirement</option>
+                <option value="Investment">Investment</option>
+                <option value="Buying house">Buying a House</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Validation error -->
+          <div id="form-error" class="error-banner hidden"></div>
+
+          <button type="submit" id="submit-btn" class="btn-primary">
+            <span class="btn-text">Get My Investment Plan</span>
+            <span class="spinner hidden" id="spinner"></span>
+          </button>
+        </form>
+      </section>
+
+      <!-- Results Section (hidden until data loaded) -->
+      <section id="results-section" class="hidden">
+
+        <!-- Summary Cards -->
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="summary-icon">💰</div>
+            <div class="summary-label">Annual Investable</div>
+            <div class="summary-value" id="total-amount">—</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-icon">📈</div>
+            <div class="summary-label">Expected Return</div>
+            <div class="summary-value" id="exp-return">—</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-icon">📊</div>
+            <div class="summary-label">Expected Volatility</div>
+            <div class="summary-value" id="exp-vol">—</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-icon">⚡</div>
+            <div class="summary-label">Sharpe Ratio</div>
+            <div class="summary-value" id="sharpe">—</div>
+          </div>
+        </div>
+
+        <!-- Chart + Allocation Table -->
+        <div class="results-columns">
+          <div class="card chart-card">
+            <h2 class="card-title">Portfolio Allocation</h2>
+            <div class="chart-wrapper">
+              <canvas id="pie-chart"></canvas>
+            </div>
+            <div id="data-source-badge" class="data-source-badge"></div>
+          </div>
+
+          <div class="card table-card">
+            <h2 class="card-title">Allocation Details</h2>
+            <table class="allocation-table">
+              <thead>
+                <tr>
+                  <th>Asset Class</th>
+                  <th>%</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody id="allocation-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Country Products -->
+        <div class="card products-card">
+          <h2 class="card-title" id="products-title">Recommended Products</h2>
+          <div id="products-grid" class="products-grid"></div>
+        </div>
+
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Investment Planner Agent &copy; 2024 — For educational purposes only. Not financial advice.</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
