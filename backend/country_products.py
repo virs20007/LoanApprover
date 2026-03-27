@@ -1,0 +1,248 @@
+CURRENCY_SYMBOLS: dict[str, str] = {
+    "us": "$",
+    "canada": "$",
+    "india": "₹",
+    "uk": "£",
+    "new zealand": "NZ$",
+    "netherlands": "€",
+    "germany": "€",
+    "france": "€",
+    "australia": "A$",
+}
+
+COUNTRY_SPECIFIC_INFO: dict[str, dict[str, dict[str, str]]] = {
+    "us": {
+        "Savings": {
+            "High-Yield Savings Account": "Offered by banks/credit unions with APY 4-5% (e.g., Marcus, Ally)",
+            "Money Market Account": "Similar to savings but often with check-writing; FDIC insured",
+            "Treasury Bills": "Short-term US govt securities (4-week to 52-week); near-risk-free",
+            "CD (Certificate of Deposit)": "Fixed-term deposits with guaranteed return; FDIC insured",
+        },
+        "Retirement": {
+            "401(k)": "Employer-sponsored plan; pre-tax or Roth contributions; employer match common",
+            "IRA (Traditional/Roth)": "Individual Retirement Account; $7,000/year limit (2024); tax advantages",
+            "SEP-IRA": "For self-employed/small business owners; higher contribution limits",
+            "Social Security": "Government retirement benefit; starts at 62 (reduced) or 67 (full)",
+        },
+        "Investment": {
+            "Brokerage Account": "Taxable account for stocks, ETFs, mutual funds (e.g., Fidelity, Schwab)",
+            "ETFs": "Low-cost diversified funds; e.g., SPY (S&P 500), QQQ (Nasdaq-100)",
+            "REITs": "Real Estate Investment Trusts; traded like stocks; dividend income",
+            "I-Bonds": "Inflation-linked US savings bonds; up to $10,000/year",
+        },
+        "Buying house": {
+            "First-Time Homebuyer Programs": "State-specific down-payment assistance programs",
+            "FHA Loan": "3.5% down payment; lower credit score requirements",
+            "VA Loan": "0% down for eligible veterans/active military; no PMI",
+            "USDA Loan": "0% down for rural properties; income limits apply",
+        },
+    },
+    "canada": {
+        "Savings": {
+            "TFSA (Tax-Free Savings Account)": "Contributions not tax-deductible, but growth and withdrawals tax-free",
+            "HISA (High-Interest Savings Account)": "Offered by EQ Bank, Tangerine; current rates ~4-5%",
+            "GIC (Guaranteed Investment Certificate)": "Fixed-term guaranteed return; CDIC insured",
+            "Canada Savings Bonds": "Government-backed; available through payroll deduction",
+        },
+        "Retirement": {
+            "RRSP (Registered Retirement Savings Plan)": "Pre-tax contributions; 18% of previous year income limit",
+            "CPP (Canada Pension Plan)": "Mandatory payroll deduction; benefits from age 60-70",
+            "OAS (Old Age Security)": "Universal pension at 65; income-tested supplement (GIS) available",
+            "PRPP (Pooled Registered Pension Plan)": "For self-employed/employers without workplace pension",
+        },
+        "Investment": {
+            "TFSA Investing": "Invest in stocks/ETFs/bonds inside TFSA; all growth tax-free",
+            "Canadian ETFs": "e.g., XIU (TSX 60), VCN (Canada), XAW (International)",
+            "Dividend Stocks": "Canadian banks/utilities known for reliable dividends",
+            "REITs": "Canadian REITs (e.g., RioCan, Canadian Apartment REIT)",
+        },
+        "Buying house": {
+            "FHSA (First Home Savings Account)": "New in 2023; $8,000/year, $40,000 lifetime; tax-deductible",
+            "HBP (Home Buyers' Plan)": "Withdraw up to $35,000 from RRSP tax-free for first home",
+            "CMHC Mortgage Insurance": "Required if down payment < 20%; enables low down payment mortgages",
+            "First-Time Home Buyer Incentive": "Gov't shared equity; 5-10% of purchase price",
+        },
+    },
+    "india": {
+        "Savings": {
+            "PPF (Public Provident Fund)": "15-year lock-in; ~7.1% p.a.; fully tax-exempt (EEE)",
+            "NSC (National Savings Certificate)": "5-year post office scheme; ~7.7% p.a.; tax deductible u/s 80C",
+            "Fixed Deposits": "Bank FDs; currently ~7-8% p.a.; TDS applicable",
+            "Sukanya Samriddhi Yojana": "For girl child; ~8.2% p.a.; 80C deduction; 21-year maturity",
+        },
+        "Retirement": {
+            "NPS (National Pension System)": "Government-backed; market-linked; additional ₹50,000 80CCD(1B) deduction",
+            "EPF (Employees' Provident Fund)": "Mandatory for salaried; 12% employer+employee; ~8.15% interest",
+            "Senior Citizens' Savings Scheme": "For 60+; ~8.2% p.a.; quarterly interest; 80C benefit",
+            "PMVVY (PM Vaya Vandana Yojana)": "LIC pension plan for seniors; guaranteed 7.4% p.a. for 10 years",
+        },
+        "Investment": {
+            "Mutual Funds (SIP)": "Systematic Investment Plans; ELSS for tax-saving; diversified equity/debt",
+            "Direct Equity": "NSE/BSE stocks; Demat account via Zerodha, Groww, etc.",
+            "REITs": "Embassy REIT, Mindspace REIT; yields ~6-8%; listed on NSE",
+            "Sovereign Gold Bonds": "RBI-issued; 2.5% interest + gold price appreciation; tax-free on maturity",
+        },
+        "Buying house": {
+            "PMAY (Pradhan Mantri Awas Yojana)": "Subsidised home loans for EWS/LIG/MIG; interest subsidy up to 6.5%",
+            "Home Loan Tax Benefits": "₹2L deduction on interest (24b) + ₹1.5L on principal (80C)",
+            "NHB (National Housing Bank) Schemes": "Refinance schemes for affordable housing loans",
+            "State Housing Board Schemes": "DDA, MHADA, etc.; lottery-based affordable housing",
+        },
+    },
+    "uk": {
+        "Savings": {
+            "ISA (Individual Savings Account)": "£20,000/year allowance; interest/gains tax-free",
+            "Cash ISA": "Savings account within ISA wrapper; rates ~4-5% currently",
+            "Premium Bonds": "NS&I lottery bonds; tax-free prizes; 1-month prize draw",
+            "Fixed-Rate Savings Bonds": "Offered by NS&I, banks; competitive rates for fixed terms",
+        },
+        "Retirement": {
+            "State Pension": "Full new state pension ~£221/week (2024); 35 qualifying NI years needed",
+            "Workplace Pension": "Auto-enrolment; minimum 8% total contribution (employer + employee)",
+            "SIPP (Self-Invested Personal Pension)": "Flexible pension; invest in wide range of assets; tax relief on contributions",
+            "Lifetime ISA": "For under-40s; 25% government bonus; use for first home or retirement",
+        },
+        "Investment": {
+            "Stocks & Shares ISA": "Invest in equities/funds within ISA; all gains tax-free",
+            "UK Gilts": "Government bonds; safe; yields currently ~4%",
+            "Investment Trusts": "Listed funds; e.g., Scottish Mortgage, City of London",
+            "VCT/EIS": "Venture Capital Trusts/Enterprise Investment Scheme; high-risk, high tax relief",
+        },
+        "Buying house": {
+            "Help to Buy ISA": "Closed to new applicants; existing accounts usable until 2030",
+            "Lifetime ISA": "Save up to £4,000/year; 25% gov bonus; use for first home (up to £450k)",
+            "Shared Ownership": "Buy 25-75% of property; pay rent on rest; ladder up over time",
+            "First Homes Scheme": "30-50% discount for first-time buyers on new-build homes",
+        },
+    },
+    "new zealand": {
+        "Savings": {
+            "KiwiSaver": "Voluntary (mandatory after joining workforce); 3-10% of pay; employer match",
+            "Term Deposits": "Bank fixed-term deposits; rates ~5-6% p.a. currently",
+            "Bonus Bonds": "Discontinued but bank savings accounts offer competitive rates",
+            "Simplicity / InvestNow": "Low-fee NZ investment platforms for savings/index funds",
+        },
+        "Retirement": {
+            "KiwiSaver Retirement": "Access at 65; employer + employee contributions; government member tax credits",
+            "NZ Superannuation": "Universal pension at 65; ~$24,000/year for couples; no means test",
+            "Defined Benefit Schemes": "Government employee schemes (e.g., NZDF, teachers); employer-funded",
+            "Self-Managed Retirement": "Index funds, rental property, or term deposits outside KiwiSaver",
+        },
+        "Investment": {
+            "NZX (NZ Stock Exchange)": "Listed equities; Smartshares ETFs (NZX 50, global)",
+            "Sharesies / Hatch": "Retail investment platforms for NZ and global stocks/ETFs",
+            "Rental Property": "Common NZ investment; note Bright-line test (10 years for most)",
+            "PIE Funds": "Portfolio Investment Entity tax structure; capped at 28% PIR tax",
+        },
+        "Buying house": {
+            "First Home Grant": "Up to $10,000 for existing homes, $20,000 for new builds (income/price limits)",
+            "First Home Loan": "5% deposit with Kāinga Ora guarantee; via select banks",
+            "KiwiSaver HomeStart": "Withdraw KiwiSaver contributions (not returns) for first home",
+            "Shared Equity Schemes": "Kāinga Ora First Home Partner; government co-ownership",
+        },
+    },
+    "netherlands": {
+        "Savings": {
+            "Spaarrekening (Savings Account)": "Standard savings account; rates recovering post-ECB hikes (~2-3%)",
+            "Box 3 Savings": "Tax on deemed return of savings/investments; rate ~6.17% (2024)",
+            "Deposito": "Fixed-term deposit; major banks offer 1-3 year terms",
+            "ASN / Triodos Green Savings": "Sustainable savings accounts with competitive rates",
+        },
+        "Retirement": {
+            "AOW (Algemene Ouderdomswet)": "State pension; full pension at 67; built up at 2%/year",
+            "Pensioenregeling (Workplace Pension)": "Mandatory sector-wide or company pension funds (e.g., ABP, PFZW)",
+            "Lijfrente (Annuity)": "Tax-deferred annuity product; deduct contributions from income",
+            "BankSparen": "Banking-based pension savings; lower cost alternative to insurance annuities",
+        },
+        "Investment": {
+            "Beleggingsrekening": "Investment account; stocks/ETFs/bonds via DEGIRO, ABN AMRO",
+            "DEGIRO": "Low-cost Dutch online broker; access to global ETFs and stocks",
+            "Vastgoed (Real Estate)": "Buy-to-let market; note Box 3 deemed return tax",
+            "VBI (Vrijgestelde Beleggingsinstelling)": "Tax-exempt investment vehicle for larger portfolios",
+        },
+        "Buying house": {
+            "NHG (Nationale Hypotheek Garantie)": "Government mortgage guarantee; lower rates; limit ~€435,000",
+            "Eigen Woning Rente Aftrek": "Mortgage interest deduction; being phased down to 37.05%",
+            "Starterslening": "Municipality top-up loan for first-time buyers; interest-free initially",
+            "Koopsubsidie": "Subsidy for lower-income first-time buyers via municipalities",
+        },
+    },
+    "germany": {
+        "Savings": {
+            "Tagesgeld (Daily Money Account)": "Instant-access savings; rates ~3-4% at direct banks (ING, DKB)",
+            "Festgeld (Fixed-Term Deposit)": "Locked savings; higher rates for 1-5 year terms",
+            "Bausparvertrag": "Building savings contract for future property purchase; state bonus",
+            "Bundesschatzbriefe": "Federal savings bonds; government-backed; various maturities",
+        },
+        "Retirement": {
+            "Gesetzliche Rentenversicherung": "Mandatory state pension; 18.6% payroll contribution (split employee/employer)",
+            "Riester-Rente": "State-subsidised private pension; €175/year bonus + child bonuses",
+            "Rürup-Rente (Basisrente)": "For self-employed; deductible contributions; annuity at retirement",
+            "Betriebliche Altersvorsorge (bAV)": "Company pension; employer contributions + tax/social security benefits",
+        },
+        "Investment": {
+            "ETF-Sparplan": "Monthly ETF savings plan; popular via Scalable Capital, Trade Republic",
+            "Depot (Brokerage Account)": "Via Comdirect, ING; invest in stocks, bonds, ETFs",
+            "Immobilienfonds": "Real estate funds (open-ended); indirect property investment",
+            "Crowdinvesting": "Real estate crowdfunding via platforms like Exporo, Bergfürst",
+        },
+        "Buying house": {
+            "KfW Wohneigentumsprogramm": "Low-interest KfW loans for home purchase; up to €100,000",
+            "Wohn-Riester": "Riester pension used for owner-occupied property financing",
+            "Bausparvertrag": "Savings + low-interest loan contract for home purchase",
+            "Regional Förderbanken": "State development bank loans (e.g., L-Bank, NRW.BANK)",
+        },
+    },
+    "france": {
+        "Savings": {
+            "Livret A": "Tax-free savings account; rate 3% (as of 2024); €22,950 ceiling",
+            "LDDS (Livret de Développement Durable)": "Tax-free; 3%; €12,000 ceiling; funds sustainable projects",
+            "LEP (Livret d'Épargne Populaire)": "For lower incomes; 5% rate; €10,000 ceiling",
+            "Assurance-vie (Euro fund)": "Capital-guaranteed insurance savings; ~2-3% return",
+        },
+        "Retirement": {
+            "Assurance Retraite (CNAV)": "State pension; full rate at 67 or 43 years of contributions",
+            "PER (Plan d'Épargne Retraite)": "New unified private pension; contributions tax-deductible",
+            "PERCO/PEROB": "Company collective retirement savings plan; employer matching",
+            "AGIRC-ARRCO": "Mandatory supplementary pension for private sector employees",
+        },
+        "Investment": {
+            "PEA (Plan d'Épargne en Actions)": "€150,000 limit; invest in EU stocks; tax-free after 5 years",
+            "Assurance-vie (UC)": "Unit-linked insurance; invest in funds; tax advantages after 8 years",
+            "SCPI (Real Estate Investment)": "Sociétés Civiles de Placement Immobilier; indirect real estate",
+            "Crowdfunding Immobilier": "Real estate crowdfunding; platforms like Homunity, Anaxago",
+        },
+        "Buying house": {
+            "PTZ (Prêt à Taux Zéro)": "Zero-interest loan for first-time buyers; income/location conditions",
+            "PAS (Prêt d'Accession Sociale)": "Low-rate social home loan; income limits; APL mortgage aid",
+            "Action Logement (1% Logement)": "Employer housing loan; subsidised rate for employees",
+            "Dispositif Pinel": "Tax reduction for buying new-build rental property; being phased out",
+        },
+    },
+    "australia": {
+        "Savings": {
+            "High-Interest Savings Account": "Online banks (ING, UBank, ME Bank); bonus rates ~5% with conditions",
+            "Term Deposits": "Fixed-term bank deposits; ~4.5-5.5% p.a. for 1-2 year terms",
+            "Offset Account": "Mortgage offset; reduces interest on home loan; effective savings rate = mortgage rate",
+            "Cash Management Account": "Higher returns than transaction accounts; instant access",
+        },
+        "Retirement": {
+            "Superannuation": "Mandatory 11% (rising to 12%) employer contribution; concessional tax rate",
+            "SMSF (Self-Managed Super Fund)": "Control your own super; invest in property, shares, etc.",
+            "Age Pension": "Means-tested; ~$27,000/year (single); asset/income test thresholds",
+            "Transition to Retirement (TTR)": "Access super as income stream from 60 while still working",
+        },
+        "Investment": {
+            "ASX ETFs": "Vanguard Australian Shares (VAS), BetaShares Australia 200 (A200)",
+            "Managed Funds": "Vanguard, Fidelity; actively managed or index; via financial advisor",
+            "Investment Bonds": "Tax-paid bonds; 30% tax on earnings; tax-free withdrawals after 10 years",
+            "Property (Negative Gearing)": "Common strategy; interest/costs deduct against income; CGT discount",
+        },
+        "Buying house": {
+            "First Home Owner Grant (FHOG)": "State-specific; $10,000-$30,000 for eligible first-time buyers",
+            "First Home Guarantee": "5% deposit with government guarantee (35,000 places/year)",
+            "First Home Super Saver Scheme": "Voluntary super contributions; withdraw up to $50,000 for first home",
+            "Stamp Duty Concessions": "State-specific; exemptions/discounts for first-time buyers and lower-value homes",
+        },
+    },
+}
